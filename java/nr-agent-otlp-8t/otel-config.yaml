@@ -1,0 +1,31 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+# Setup a tail sampler that only include traces with http.status_code >= 400
+processors:
+  tail_sampling:
+    decision_wait: 5s
+    expected_new_traces_per_sec: 5
+    policies:
+      [
+        {
+          name: include_http_erors,
+          type: status_code,
+          status_code: {status_codes: [ERROR]}
+        }
+      ]
+exporters:
+  logging:
+    logLevel: DEBUG
+  newrelic:
+    apikey: $NEW_RELIC_API_KEY
+extensions:
+  health_check: {}
+service:
+  extensions: [health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [tail_sampling]
+      exporters: [logging, newrelic]

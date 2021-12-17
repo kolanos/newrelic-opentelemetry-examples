@@ -1,0 +1,24 @@
+version: '3'
+services:
+  dotnetapp:
+    build: dotnetapp
+    environment:
+      ASPNETCORE_URLS: "http://*:7231"
+    ports:
+     - "7231:7231"
+    expose:
+      - "7231"
+
+  collector:
+    image: otel/opentelemetry-collector-contrib:0.40.0
+    volumes:
+    - ./otel-config.yaml:/otel-config.yaml
+    command: ["--config", "/otel-config.yaml"]
+    environment:
+      LOG_EXPORTER_LOG_LEVEL: "DEBUG"
+      NEW_RELIC_API_KEY: "${NEW_RELIC_API_KEY}"
+    ports:
+      - "4317:4317"     # grpc
+      - "13133:13133"   # health
+    depends_on:
+      - dotnetapp

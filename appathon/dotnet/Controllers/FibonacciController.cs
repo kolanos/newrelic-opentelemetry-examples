@@ -12,19 +12,24 @@ public class FibonacciController : ControllerBase
     private ActivitySource activitySource = new ActivitySource(ActivitySourceName);
 
     [HttpGet]
-    public IActionResult Get(long n)
+    public async Task<String> Get(long n)
     {
-        try
-        {
-            return Ok(new {
-                n = n,
-                result = Fibonacci(n)
-            });
+        
+        using(var client = new HttpClient()){
+            return await client.GetStringAsync($"http://localhost:5000/fibonacci?n={n}");
         }
-        catch (ArgumentOutOfRangeException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+
+        // try
+        // {
+        //     return Ok(new {
+        //         n = n,
+        //         result = Fibonacci(n)
+        //     });
+        // }
+        // catch (ArgumentOutOfRangeException ex)
+        // {
+        //     return BadRequest(new { message = ex.Message });
+        // }
     }
 
     private long Fibonacci(long n)

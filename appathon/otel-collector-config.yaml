@@ -1,0 +1,33 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+
+exporters:
+  logging:
+    loglevel: debug
+
+  jaeger:
+    endpoint: jaeger-all-in-one:14250
+    tls:
+      insecure: true
+
+processors:
+  tail_sampling:
+    decision_wait: 3s # prove this switch does something, and what is that something? 
+    num_traces: 1
+    policies:
+      [
+        {
+            name: test-policy-1,
+            type: status_code,
+            status_code: {status_codes: [ERROR]}
+          }
+      ]
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [tail_sampling]
+      exporters: [logging, jaeger]

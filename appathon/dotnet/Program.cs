@@ -17,7 +17,12 @@ builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
         .SetResourceBuilder(resourceBuilder)
         .AddSource(FibonacciController.ActivitySourceName)
         .AddAspNetCoreInstrumentation()
-        .AddOtlpExporter();
+        .AddHttpClientInstrumentation()
+        .AddOtlpExporter(
+            options => {
+                options.Endpoint = new Uri("http://localhost:4317"); // sending to local Collector
+            }
+        );
 });
 
 var app = builder.Build();

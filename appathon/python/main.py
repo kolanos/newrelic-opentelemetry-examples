@@ -1,4 +1,5 @@
 import flask
+import time
 from flask import request, jsonify, abort
 
 from opentelemetry.trace.status import Status, StatusCode
@@ -26,7 +27,7 @@ trace.set_tracer_provider(
 )
 
 trace.get_tracer_provider().add_span_processor(
-    BatchSpanProcessor(OTLPSpanExporter(compression=Compression.Gzip))
+    BatchSpanProcessor(OTLPSpanExporter(compression=Compression.Gzip, endpoint="http://localhost:4317"))
 )
 
 app = flask.Flask(__name__)
@@ -50,6 +51,7 @@ def fib():
 
 
 def calcfib(x):
+    time.sleep(5)
     with tracer.start_as_current_span("fibonacci") as span:
         span.set_attribute("oteldemo.n", x)
 

@@ -1,43 +1,21 @@
-version: '3'
+version: "2"
 services:
-  appathon-dotnet:
-    build: ./dotnet
+
+  # Jaeger
+  jaeger-all-in-one:
+    image: jaegertracing/all-in-one:latest
     ports:
-      - "8080:80"
-    environment:
-      OTEL_EXPORTER_OTLP_ENDPOINT: https://otlp.nr-data.net:4317
-      OTEL_EXPORTER_OTLP_HEADERS: "api-key=${NEW_RELIC_API_KEY}"
-  appathon-java:
-    build: ./java
+      - "16686:16686" # this is how we see the Jaeger UI - if no mapping, we can't get to it - the mapping allows our machine to 'talk' to the docker 'machines' - exposes them to our machine
+      - "14268"
+      - "14250"
+
+  # Collector
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.46.0
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
     ports:
-      - "8081:8080"
-    environment:
-      OTEL_SERVICE_NAME: "appathon-java"
-      OTEL_RESOURCE_ATTRIBUTES: service.instance.id=6d1331ab-cfd3-4fff-9dfe-21e5cbfab49a
-      OTEL_EXPORTER_OTLP_ENDPOINT: https://otlp.nr-data.net:4317
-      OTEL_EXPORTER_OTLP_HEADERS: "api-key=${NEW_RELIC_API_KEY}"
-      OTEL_EXPORTER_OTLP_COMPRESSION: gzip
-      OTEL_SPAN_ATTRIBUTE_VALUE_LENGTH_LIMIT: 1000
-  appathon-javascript:
-    build: ./javascript
-    ports:
-      - "8082:8080"
-    environment:
-      OTEL_EXPORTER_OTLP_ENDPOINT: grpc://otlp.nr-data.net:4317
-      OTEL_EXPORTER_OTLP_HEADERS: "api-key=${NEW_RELIC_API_KEY}"
-      OTEL_SPAN_ATTRIBUTE_VALUE_LENGTH_LIMIT: 1000
-  appathon-go:
-    build: ./go
-    ports:
-      - "8083:8080"
-    environment:
-      OTEL_EXPORTER_OTLP_ENDPOINT: https://otlp.nr-data.net:4317
-      OTEL_EXPORTER_OTLP_HEADERS: "api-key=${NEW_RELIC_API_KEY}"
-      OTEL_EXPORTER_OTLP_COMPRESSION: gzip
-  appathon-python:
-    build: ./python
-    ports:
-      - "8084:5000"
-    environment:
-      OTEL_EXPORTER_OTLP_ENDPOINT: https://otlp.nr-data.net:4317
-      OTEL_EXPORTER_OTLP_HEADERS: "api-key=${NEW_RELIC_API_KEY}"
+      - "4317:4317"        # OTLP gRPC receiver
+    depends_on:
+      - jaeger-all-in-one

@@ -10,6 +10,7 @@ import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.internal.retry.RetryUtil;
 import io.opentelemetry.exporter.logging.LoggingMetricExporter;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
+import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogExporter;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
@@ -57,8 +58,9 @@ public class OpenTelemetryConfig {
 
     // Configure traces
     var spanExporterBuilder =
-        OtlpGrpcSpanExporter.builder()
-            .setEndpoint(OTLP_HOST_SUPPLIER.get())
+        OtlpHttpSpanExporter.builder()
+            .setEndpoint("https://otlp.nr-data.net:443/v1/traces")
+            .setCompression("gzip")
             .addHeader("api-key", newRelicApiOrLicenseKey());
 
     // Enable retry policy via unstable API
